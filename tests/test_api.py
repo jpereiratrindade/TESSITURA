@@ -49,7 +49,7 @@ def main():
             else:
                 raise AssertionError("Servidor nao iniciou")
             assert h["bind"] == "127.0.0.1"
-            assert h["version"] == "0.1.1"
+            assert h["version"] == "0.1.2"
             caps = req("/api/v1/capabilities")
             assert caps["exposure"] == "local_only"
             assert caps["automated_inference"] is False

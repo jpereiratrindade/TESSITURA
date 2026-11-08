@@ -1,0 +1,14 @@
+country,biome,region,state,geocode,municipality,class_id,level_0,level_1,level_2,level_3,level_4,area_ha
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,3,Natural,1. Forest,1.1. Forest Formation,1.1. Forest Formation,1.1. Forest Formation,56085.241250098617
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,9,Antropic,3. Farming,3.3. Forest Plantation,3.3. Forest Plantation,3.3. Forest Plantation,18167.112962640509
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,11,Natural,2. Herbaceous and Shrubby Vegetation,2.1. Wetland,2.1. Wetland,2.1. Wetland,1376.9106829345719
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,12,Natural,2. Herbaceous and Shrubby Vegetation,2.3. Grassland Formation,2.3. Grassland Formation,2.3. Grassland Formation,194026.08005731241
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,21,Antropic,3. Farming,3.4. Mosaic of Uses,3.4. Mosaic of Uses,3.4. Mosaic of Uses,51021.678085570573
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,24,Antropic,4. Non vegetated area,4.2. Urban Area,4.2. Urban Area,4.2. Urban Area,3137.9806405335371
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,25,Natural/Antropic,4. Non vegetated area,4.6. Other non Vegetated Areas,4.6. Other non Vegetated Areas,4.6. Other non Vegetated Areas,863.46218585204645
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,29,Natural,2. Herbaceous and Shrubby Vegetation,2.6. Rocky Outcrop,2.6. Rocky Outcrop,2.6. Rocky Outcrop,1182.375347888184
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,33,Natural,5. Water,"5.1. River, Lake and Ocean","5.1. River, Lake and Ocean","5.1. River, Lake and Ocean",6401.8916996948192
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,39,Antropic,3. Farming,3.2. Agriculture,3.2.1. Temporary Crop,3.2.1.1. Soybean,54704.932237929163
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,40,Antropic,3. Farming,3.2. Agriculture,3.2.1. Temporary Crop,3.2.1.3. Rice,7829.0464475951649
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,41,Antropic,3. Farming,3.2. Agriculture,3.2.1. Temporary Crop,3.2.1.5. Other Temporary Crops,14211.923571960529
+Brasil,Pampa,Sul,Rio Grande do Sul,4301602,Bagé,48,Antropic,3. Farming,3.2. Agriculture,3.2.2. Perennial Crop,3.2.2.4. Other Perennial Crops,16.29606210937499

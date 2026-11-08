@@ -1,0 +1,65 @@
+{
+  "schema_version": "tessitura.integration-record.v1",
+  "record_id": "mapbiomas:collection11:municipality:4301602:2023",
+  "identity": {
+    "source_system": "MapBiomas Brasil",
+    "external_id": "4301602:2023",
+    "dataset": "Coleção 11 da Série Anual de Mapas de Cobertura e Uso da Terra do Brasil",
+    "dataset_version": "Coleção 11 v1, publicada em 2026-08-12",
+    "record_type": "classification_statistics"
+  },
+  "provenance": {
+    "source_uri": "https://brasil.mapbiomas.org/iniciativas-e-produtos/cobertura-e-uso-da-terra/cobertura-30m/cobertura/",
+    "download_uri": "https://drive.google.com/uc?export=download&id=1otOqymHuixvkRGVl65zTTNyfaHo46Gqk",
+    "obtained_at": "2026-11-07",
+    "access_method": "download oficial da tabela municipal; seleção do geocódigo 4301602 e coluna y2023",
+    "license": "CC BY 4.0; atribuição ao Projeto MapBiomas",
+    "artifact_sha256": "c223fd84dcdd21e49d651788ff5a726a7e3aa04d2eab730e99407dd80a8d3e30",
+    "source_member_sha256": "8de70a35fdd35f943e059763d128825ee08c0978948311ac03c769e0f178abfe",
+    "subset_sha256": "1822832e28324a93293eebeb715681a3624287626e37184e76168b7440de6da8",
+    "sample_path": "data/exp001/mapbiomas_bage_2023.csv",
+    "adapter_version": "exp001-adapter/1.0.0"
+  },
+  "semantics": {
+    "nature": "land_cover_classification",
+    "variable": "área por classe de cobertura e uso da terra",
+    "unit": "ha",
+    "methodology": "estatística oficial agregada por município a partir da classificação MapBiomas 30 m; não é observação direta de processo"
+  },
+  "temporal": {
+    "valid_start": "2023-01-01",
+    "valid_end": "2023-12-31",
+    "observed_start": null,
+    "observed_end": null,
+    "source_published": "2026-08-12",
+    "timezone": "não aplicável à classificação anual",
+    "granularity": "annual"
+  },
+  "spatial": {
+    "reference_type": "municipality",
+    "reference_id": "IBGE:4301602",
+    "crs": null,
+    "support": "municipality_polygon",
+    "coordinates": null,
+    "resolution_m": 30,
+    "representativeness": "estatística para toda a área do município; o subconjunto não contém a geometria municipal"
+  },
+  "quality": {
+    "status": "publisher_classification",
+    "expected_count": 13,
+    "valid_count": 13,
+    "missing_count": 0,
+    "missing_markers": [],
+    "unknown_values_are_zero": false,
+    "warnings": [
+      "classes são resultado de classificação e não observação direta do uso",
+      "a série completa é revisada a cada nova coleção",
+      "valores de área não autorizam inferência causal com meteorologia"
+    ]
+  },
+  "data": {
+    "year": 2023,
+    "class_count": 13,
+    "total_area_ha": 409024.9312321195
+  }
+}

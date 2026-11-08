@@ -34,7 +34,7 @@ def main():
 
         result = subprocess.run([exe, "--root", str(root), "--db", str(db), "--doctor"],
                                 capture_output=True, text=True, check=True)
-        assert json.loads(result.stdout)["version"] == "0.1.1"
+        assert json.loads(result.stdout)["version"] == "0.1.2"
 
         connection = sqlite3.connect(db)
         try:

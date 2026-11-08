@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tessitura.local/contracts/integration-record-v1.schema.json",
+  "title": "TESSITURA integration record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_id", "identity", "provenance", "semantics", "temporal", "spatial", "quality", "data"],
+  "properties": {
+    "schema_version": {"const": "tessitura.integration-record.v1"},
+    "record_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9:._-]{4,199}$"},
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system", "external_id", "dataset", "dataset_version", "record_type"],
+      "properties": {
+        "source_system": {"type": "string", "minLength": 2},
+        "external_id": {"type": "string", "minLength": 2},
+        "dataset": {"type": "string", "minLength": 2},
+        "dataset_version": {"type": "string", "minLength": 1},
+        "record_type": {"enum": ["classification_statistics", "observation_aggregate"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_uri", "download_uri", "obtained_at", "access_method", "license", "artifact_sha256", "source_member_sha256", "subset_sha256", "sample_path", "adapter_version"],
+      "properties": {
+        "source_uri": {"type": "string", "format": "uri"},
+        "download_uri": {"type": "string", "format": "uri"},
+        "obtained_at": {"type": "string", "format": "date"},
+        "access_method": {"type": "string", "minLength": 2},
+        "license": {"type": "string", "minLength": 2},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"},
+        "source_member_sha256": {"$ref": "#/$defs/sha256"},
+        "subset_sha256": {"$ref": "#/$defs/sha256"},
+        "sample_path": {"type": "string", "pattern": "^data/exp001/[a-z0-9_.-]+\\.csv$"},
+        "adapter_version": {"const": "exp001-adapter/1.0.0"}
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nature", "variable", "unit", "methodology"],
+      "properties": {
+        "nature": {"enum": ["land_cover_classification", "instrument_measurement"]},
+        "variable": {"type": "string", "minLength": 2},
+        "unit": {"type": "string", "minLength": 1},
+        "methodology": {"type": "string", "minLength": 10}
+      }
+    },
+    "temporal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid_start", "valid_end", "observed_start", "observed_end", "source_published", "timezone", "granularity"],
+      "properties": {
+        "valid_start": {"type": "string", "format": "date"},
+        "valid_end": {"type": "string", "format": "date"},
+        "observed_start": {"type": ["string", "null"], "format": "date-time"},
+        "observed_end": {"type": ["string", "null"], "format": "date-time"},
+        "source_published": {"type": ["string", "null"], "format": "date"},
+        "timezone": {"type": "string", "minLength": 1},
+        "granularity": {"enum": ["annual", "hourly_aggregated_daily"]}
+      }
+    },
+    "spatial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference_type", "reference_id", "crs", "support", "coordinates", "resolution_m", "representativeness"],
+      "properties": {
+        "reference_type": {"enum": ["municipality", "station"]},
+        "reference_id": {"type": "string", "minLength": 2},
+        "crs": {"type": ["string", "null"]},
+        "support": {"enum": ["municipality_polygon", "station_point"]},
+        "coordinates": {
+          "type": ["array", "null"],
+          "prefixItems": [{"type": "number", "minimum": -90, "maximum": 90}, {"type": "number", "minimum": -180, "maximum": 180}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "resolution_m": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "representativeness": {"type": "string", "minLength": 10}
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "expected_count", "valid_count", "missing_count", "missing_markers", "unknown_values_are_zero", "warnings"],
+      "properties": {
+        "status": {"enum": ["publisher_classification", "raw_unvalidated_observations"]},
+        "expected_count": {"type": "integer", "minimum": 0},
+        "valid_count": {"type": "integer", "minimum": 0},
+        "missing_count": {"type": "integer", "minimum": 0},
+        "missing_markers": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "unknown_values_are_zero": {"const": false},
+        "warnings": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 5}}
+      }
+    },
+    "data": {"type": "object", "minProperties": 1}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

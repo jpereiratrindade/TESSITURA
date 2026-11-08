@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$(readlink -f "$0")")"
 MODE="${1:-serve}"
 if [[ "$MODE" == deps ]]; then
-  echo 'Fedora 44 (host ou toolbox): sudo dnf install -y gcc-c++ cmake ninja-build boost-devel sqlite-devel openssl-devel python3'
+  echo 'Fedora 44 (host ou toolbox): sudo dnf install -y gcc-c++ cmake ninja-build boost-devel sqlite-devel openssl-devel python3 python3-jsonschema'
   exit 0
 fi
 if [[ "$MODE" == clean ]]; then
@@ -11,8 +11,8 @@ if [[ "$MODE" == clean ]]; then
   rm -rf -- build
   exit 0
 fi
-if [[ "$MODE" != serve && "$MODE" != test && "$MODE" != build && "$MODE" != doctor ]]; then
-  echo "Uso: ./run.sh [serve|test|build|doctor|deps|clean]" >&2
+if [[ "$MODE" != serve && "$MODE" != test && "$MODE" != build && "$MODE" != doctor && "$MODE" != experiment ]]; then
+  echo "Uso: ./run.sh [serve|test|build|doctor|experiment|deps|clean]" >&2
   exit 2
 fi
 for c in cmake c++ ninja; do command -v "$c" >/dev/null || { echo "Falta $c; execute ./run.sh deps" >&2; exit 1; }; done
@@ -22,5 +22,6 @@ case "$MODE" in
   build) echo 'Compilação concluída.';;
   doctor) ./build/tessitura-server --doctor --root "$PWD" --db "${TESSITURA_DB:-$PWD/var/tessitura.sqlite3}";;
   test) ctest --test-dir build --output-on-failure;;
+  experiment) python3 tools/exp001.py run --root "$PWD" --server "$PWD/build/tessitura-server" --db "${TESSITURA_EXP_DB:-$PWD/var/exp001/tessitura.sqlite3}" --output "${TESSITURA_EXP_OUTPUT:-$PWD/var/exp001/output}";;
   serve) exec ./build/tessitura-server --root "$PWD" --db "${TESSITURA_DB:-$PWD/var/tessitura.sqlite3}" --host "${TESSITURA_HOST:-127.0.0.1}" --port "${TESSITURA_PORT:-18871}";;
 esac

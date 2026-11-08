@@ -1,0 +1,57 @@
+{
+  "schema_version": "tessitura.integration-record.v1",
+  "record_id": "fixture:invalid:missing-as-zero",
+  "identity": {
+    "source_system": "fixture sintética",
+    "external_id": "invalid-001",
+    "dataset": "fixture adversarial",
+    "dataset_version": "1",
+    "record_type": "observation_aggregate"
+  },
+  "provenance": {
+    "source_uri": "https://example.invalid/source",
+    "download_uri": "https://example.invalid/download",
+    "obtained_at": "2026-11-07",
+    "access_method": "fixture local",
+    "license": "não aplicável",
+    "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_member_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "subset_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "sample_path": "data/exp001/invalid.csv",
+    "adapter_version": "exp001-adapter/1.0.0"
+  },
+  "semantics": {
+    "nature": "instrument_measurement",
+    "variable": "temperatura",
+    "unit": "°C",
+    "methodology": "fixture que deve ser rejeitada pelo contrato"
+  },
+  "temporal": {
+    "valid_start": "2023-01-01",
+    "valid_end": "2023-01-01",
+    "observed_start": "2023-01-01T00:00:00Z",
+    "observed_end": "2023-01-01T23:00:00Z",
+    "source_published": null,
+    "timezone": "UTC",
+    "granularity": "hourly_aggregated_daily"
+  },
+  "spatial": {
+    "reference_type": "station",
+    "reference_id": "fixture:station",
+    "crs": "EPSG:4326",
+    "support": "station_point",
+    "coordinates": [-31.0, -54.0],
+    "resolution_m": null,
+    "representativeness": "fixture sem representatividade científica"
+  },
+  "quality": {
+    "status": "raw_unvalidated_observations",
+    "expected_count": 24,
+    "valid_count": 23,
+    "missing_count": 1,
+    "missing_markers": [""],
+    "unknown_values_are_zero": true,
+    "warnings": ["fixture adversarial"]
+  },
+  "data": {"temperature_mean_c": 0}
+}

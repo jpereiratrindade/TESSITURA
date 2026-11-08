@@ -31,7 +31,7 @@ namespace http = beast::http;
 using tcp = asio::ip::tcp;
 using Obj = json::object;
 using Arr = json::array;
-constexpr std::string_view kVersion = "0.1.1";
+constexpr std::string_view kVersion = "0.1.2";
 constexpr std::uint64_t kMaxBodySize = 64 * 1024;
 constexpr auto kHttpTimeout = std::chrono::seconds(10);
 

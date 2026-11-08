@@ -1,0 +1,67 @@
+{
+  "schema_version": "tessitura.integration-record.v1",
+  "record_id": "inmet:a827:2023-01:daily-aggregate",
+  "identity": {
+    "source_system": "INMET",
+    "external_id": "A827:2023-01",
+    "dataset": "Dados Históricos Anuais 2023 — estação automática A827 Bagé",
+    "dataset_version": "arquivo anual 2023, sem identificador de versão publicado",
+    "record_type": "observation_aggregate"
+  },
+  "provenance": {
+    "source_uri": "https://portal.inmet.gov.br/dadoshistoricos",
+    "download_uri": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2023.zip",
+    "obtained_at": "2026-11-07",
+    "access_method": "download oficial do ZIP anual; extração de A827; agregação diária de janeiro",
+    "license": "dados públicos e gratuitos; uso e aplicação sob responsabilidade do usuário",
+    "artifact_sha256": "b17391392cc1219151977cc2c46a7ab24368d821fd780311da9fff62a627bfd8",
+    "source_member_sha256": "ad392c891037f90202e33a59c9b2c7138c0da242a4a6ffc42a4e3af9b807a438",
+    "subset_sha256": "bbf317ac87cfaa59720bedcb44eb33662b23b7ecd87edbd08b6798927c1d12de",
+    "sample_path": "data/exp001/inmet_a827_2023-01_daily.csv",
+    "adapter_version": "exp001-adapter/1.0.0"
+  },
+  "semantics": {
+    "nature": "instrument_measurement",
+    "variable": "precipitação horária e temperatura do ar horária agregadas por dia",
+    "unit": "mm e °C",
+    "methodology": "soma diária da precipitação e média, mínimo e máximo diários da temperatura sobre observações horárias disponíveis"
+  },
+  "temporal": {
+    "valid_start": "2023-01-01",
+    "valid_end": "2023-01-31",
+    "observed_start": "2023-01-01T00:00:00Z",
+    "observed_end": "2023-01-31T23:00:00Z",
+    "source_published": null,
+    "timezone": "UTC",
+    "granularity": "hourly_aggregated_daily"
+  },
+  "spatial": {
+    "reference_type": "station",
+    "reference_id": "INMET:A827",
+    "crs": "EPSG:4326",
+    "support": "station_point",
+    "coordinates": [-31.34777777, -54.01333333],
+    "resolution_m": null,
+    "representativeness": "medição pontual da estação a 226,19 m de altitude; não representa automaticamente todo o município"
+  },
+  "quality": {
+    "status": "raw_unvalidated_observations",
+    "expected_count": 744,
+    "valid_count": 744,
+    "missing_count": 0,
+    "missing_markers": ["", "9999", "Null"],
+    "unknown_values_are_zero": false,
+    "warnings": [
+      "o INMET informa que dados de estações automáticas são brutos e não passam por consistência",
+      "ausência em outros períodos do arquivo anual não foi convertida em zero",
+      "agregação mensal não demonstra relação com classes de cobertura"
+    ]
+  },
+  "data": {
+    "days": 31,
+    "precipitation_total_mm": 34.0,
+    "temperature_mean_c": 25.142473129032258,
+    "temperature_min_c": 12.4,
+    "temperature_max_c": 35.5
+  }
+}

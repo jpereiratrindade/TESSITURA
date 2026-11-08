@@ -1,0 +1,36 @@
+{
+  "experiment_id": "EXP-001",
+  "retrieved_at": "2026-11-07",
+  "sources": [
+    {
+      "publisher": "Projeto MapBiomas",
+      "dataset": "MAPBIOMAS_BRAZIL-COL.11-BIOME_STATE_MUNICIPALITY v1",
+      "source_page": "https://brasil.mapbiomas.org/iniciativas-e-produtos/cobertura-e-uso-da-terra/cobertura-30m/cobertura/",
+      "download_uri": "https://drive.google.com/uc?export=download&id=1otOqymHuixvkRGVl65zTTNyfaHo46Gqk",
+      "license": "CC BY 4.0",
+      "archive_bytes": 78296450,
+      "archive_sha256": "c223fd84dcdd21e49d651788ff5a726a7e3aa04d2eab730e99407dd80a8d3e30",
+      "member": "MAPBIOMAS_BRAZIL-COL.11-BIOME_STATE_MUNICIPALITY.xlsx",
+      "member_bytes": 78354101,
+      "member_sha256": "8de70a35fdd35f943e059763d128825ee08c0978948311ac03c769e0f178abfe",
+      "subset": "data/exp001/mapbiomas_bage_2023.csv",
+      "subset_bytes": 2227,
+      "subset_sha256": "1822832e28324a93293eebeb715681a3624287626e37184e76168b7440de6da8"
+    },
+    {
+      "publisher": "Instituto Nacional de Meteorologia — INMET",
+      "dataset": "Dados Históricos Anuais 2023 — estações automáticas",
+      "source_page": "https://portal.inmet.gov.br/dadoshistoricos",
+      "download_uri": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2023.zip",
+      "license": "dados públicos e gratuitos; uso e aplicação sob responsabilidade do usuário",
+      "archive_bytes": 107069252,
+      "archive_sha256": "b17391392cc1219151977cc2c46a7ab24368d821fd780311da9fff62a627bfd8",
+      "member": "INMET_S_RS_A827_BAGE_01-01-2023_A_31-12-2023.CSV",
+      "member_bytes": 805889,
+      "member_sha256": "ad392c891037f90202e33a59c9b2c7138c0da242a4a6ffc42a4e3af9b807a438",
+      "subset": "data/exp001/inmet_a827_2023-01_daily.csv",
+      "subset_bytes": 1376,
+      "subset_sha256": "bbf317ac87cfaa59720bedcb44eb33662b23b7ecd87edbd08b6798927c1d12de"
+    }
+  ]
+}

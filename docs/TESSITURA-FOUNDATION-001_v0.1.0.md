@@ -58,12 +58,13 @@ A arquitetura inicial é um monólito modularizável, não um conjunto prematuro
 | MÉTIS | Resultados de modelos e episódios | Tratar como resultados calculados/hipóteses, não como ocorrência física; citar versão de modelo |
 | MPRR | Perguntas e confrontação crítica | Inspiração metodológica opcional, sem acoplamento ou dependência obrigatória |
 
-Nenhuma dessas integrações está implementada até a v0.1.1. Contratos devem anteceder conectores.
+Até a v0.1.1, nenhuma dessas integrações estava implementada. A v0.1.2 demonstra somente o recorte contratual e offline do EXP-001 com MapBiomas e INMET; isso não equivale a conectores genéricos ou integração institucional com essas fontes.
 
 ## 6. Evolução e próximas versões
 
 - **v0.1.1 — Qualidade do núcleo (entregue):** canonicalização antes do fingerprint, validação temporal de calendário, `observed_at` na interface, migrações generalizadas, idempotência do diário por investigação, bind seguro, timeout e limite antecipado do corpo HTTP.
-- **v0.1.2 — Modularização:** separar storage, domínio, API, HTTP e migrações sem alterar contratos; preparar paginação e filtros.
+- **v0.1.2 — Prova vertical (entregue):** EXP-001 reproduzível com dois recortes reais, contrato versionado, hashes, incompatibilidade explícita de suportes, dossiê e repetição idempotente. A mudança de sequência está registrada no ADR-003.
+- **Próxima decisão:** avaliar as lacunas observadas no EXP-001 antes de escolher entre modularização, proveniência estruturada, intervalo de observação ou proposições.
 - **v0.2.0 — Grafo argumentativo:** introduzir proposições investigativas como entidade de primeira classe e relacionar evidências ao objeto exato que apoiam, contradizem, contextualizam ou questionam.
 - **v0.3.0 — Revisão e proveniência:** representar revisão sem apagar história e separar fonte externa, artefato documental, extração e evidência usada na investigação.
 - **Futuro**: SQL/PostGIS quando consultas espaciais, volume de dados e multiusuário justificarem. Migração deve preservar a semântica e o histórico original.
