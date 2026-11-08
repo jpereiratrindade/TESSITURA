@@ -10,12 +10,14 @@
 #include <array>
 #include <charconv>
 #include <cctype>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <regex>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -29,6 +31,9 @@ namespace http = beast::http;
 using tcp = asio::ip::tcp;
 using Obj = json::object;
 using Arr = json::array;
+constexpr std::string_view kVersion = "0.1.1";
+constexpr std::uint64_t kMaxBodySize = 64 * 1024;
+constexpr auto kHttpTimeout = std::chrono::seconds(10);
 
 static std::string read_text(const fs::path& p) {
     std::ifstream f(p, std::ios::binary);
@@ -43,11 +48,17 @@ static std::string sha256hex(std::string_view text) {
     for (auto b : digest) { out.push_back(hex[b >> 4]); out.push_back(hex[b & 15]); }
     return out;
 }
+static std::string trim(std::string value) {
+    const auto whitespace=[](unsigned char c){return std::isspace(c)!=0;};
+    const auto first=std::find_if_not(value.begin(),value.end(),whitespace);
+    const auto last=std::find_if_not(value.rbegin(),value.rend(),whitespace).base();
+    return first<last?std::string(first,last):std::string();
+}
 static std::string field(const Obj& o, std::string_view key, std::size_t max = 2000) {
     auto it = o.find(key);
     if (it == o.end() || it->value().is_null()) return {};
     if (!it->value().is_string()) throw std::invalid_argument("Campo deve ser texto: " + std::string(key));
-    std::string result = it->value().as_string().c_str();
+    std::string result = trim(it->value().as_string().c_str());
     if (result.size() > max) throw std::invalid_argument("Campo excede tamanho permitido: " + std::string(key));
     return result;
 }
@@ -60,10 +71,44 @@ static void choice(const std::string& value, std::initializer_list<std::string_v
     for (auto a: allowed) if (a == value) return;
     throw std::invalid_argument("Valor nao permitido para " + std::string(name));
 }
-static void temporal(const std::string& s, std::string_view name) {
-    if (s.empty()) return;
+struct TemporalValue { bool includes_time; std::int64_t microseconds; };
+static int decimal_part(std::string_view value,std::size_t offset,std::size_t length) {
+    int result=0;
+    auto [end,ec]=std::from_chars(value.data()+offset,value.data()+offset+length,result);
+    if(ec!=std::errc{}||end!=value.data()+offset+length)throw std::invalid_argument("Data ISO-8601 invalida");
+    return result;
+}
+static std::optional<TemporalValue> temporal(const std::string& s, std::string_view name) {
+    if (s.empty()) return std::nullopt;
     static const std::regex iso(R"(^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$))");
     if (!std::regex_match(s, iso)) throw std::invalid_argument("Data precisa ser ISO-8601: " + std::string(name));
+    const auto year=decimal_part(s,0,4),month=decimal_part(s,5,2),day=decimal_part(s,8,2);
+    const std::chrono::year_month_day calendar{std::chrono::year{year},std::chrono::month{static_cast<unsigned>(month)},std::chrono::day{static_cast<unsigned>(day)}};
+    if(!calendar.ok())throw std::invalid_argument("Data de calendario invalida: "+std::string(name));
+    auto micros=std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::sys_days{calendar}.time_since_epoch()).count();
+    if(s.size()==10)return TemporalValue{false,micros};
+    const auto hour=decimal_part(s,11,2),minute=decimal_part(s,14,2),second=decimal_part(s,17,2);
+    if(hour>23||minute>59||second>59)throw std::invalid_argument("Horario invalido: "+std::string(name));
+    micros+=(static_cast<std::int64_t>(hour)*3600+minute*60+second)*1000000;
+    std::size_t zone=19;
+    if(s[zone]=='.'){
+        const auto end=s.find_first_of("Z+-",zone+1);
+        auto fraction=s.substr(zone+1,end-zone-1);while(fraction.size()<6)fraction.push_back('0');
+        micros+=decimal_part(fraction,0,fraction.size());zone=end;
+    }
+    if(s[zone]!='Z'){
+        const auto offset_hour=decimal_part(s,zone+1,2),offset_minute=decimal_part(s,zone+4,2);
+        if(offset_hour>14||offset_minute>59||(offset_hour==14&&offset_minute!=0))throw std::invalid_argument("Fuso horario invalido: "+std::string(name));
+        const auto offset=(static_cast<std::int64_t>(offset_hour)*60+offset_minute)*60*1000000;
+        micros+=s[zone]=='-'?offset:-offset;
+    }
+    return TemporalValue{true,micros};
+}
+static void temporal_interval(const std::string& start,const std::string& end) {
+    const auto first=temporal(start,"valid_start"),last=temporal(end,"valid_end");
+    if(!first||!last)return;
+    if(first->includes_time!=last->includes_time)throw std::invalid_argument("Inicio e fim precisam usar a mesma granularidade temporal");
+    if(first->microseconds>last->microseconds)throw std::invalid_argument("Intervalo temporal invertido");
 }
 static bool is_sha256(const std::string& s) {
     return s.empty() || (s.size() == 64 && std::all_of(s.begin(),s.end(),[](unsigned char c){return std::isxdigit(c) != 0;}));
@@ -116,6 +161,44 @@ class Store {
     void transaction_begin(){exec("BEGIN IMMEDIATE");}
     void transaction_commit(){exec("COMMIT");}
     void transaction_rollback() noexcept {sqlite3_exec(db_,"ROLLBACK",nullptr,nullptr,nullptr);}
+    void apply_migrations(const fs::path& project_root){
+        const auto directory=project_root/"db/migrations";
+        if(!fs::is_directory(directory))throw std::runtime_error("Diretorio de migracoes nao encontrado: "+directory.string());
+        std::vector<fs::path> migrations;
+        for(const auto& entry:fs::directory_iterator(directory))if(entry.is_regular_file()&&entry.path().extension()==".sql")migrations.push_back(entry.path());
+        std::sort(migrations.begin(),migrations.end());
+        if(migrations.empty())throw std::runtime_error("Nenhuma migracao encontrada");
+        static const std::regex name_pattern(R"(^(\d{3})_[a-z0-9_]+$)");
+        std::string prior_number;
+        std::set<std::string> available;
+        for(const auto& migration:migrations){
+            const auto version=migration.stem().string();std::smatch match;
+            if(!std::regex_match(version,match,name_pattern))throw std::runtime_error("Nome de migracao invalido: "+migration.filename().string());
+            if(match[1].str()==prior_number)throw std::runtime_error("Numero de migracao duplicado: "+match[1].str());
+            prior_number=match[1].str();
+            available.insert(version);
+        }
+        SqlStmt recorded(db_,"SELECT version FROM schema_migrations");
+        while(recorded.next()){
+            const auto version=text_col(recorded.raw(),0);
+            if(!available.contains(version))throw std::runtime_error("Arquivo da migracao historica ausente: "+version);
+        }
+        for(const auto& migration:migrations){
+            const auto version=migration.stem().string();
+            const auto content=read_text(migration),digest=sha256hex(content);
+            SqlStmt applied(db_,"SELECT sha256 FROM schema_migrations WHERE version=?");applied.bind(1,version);
+            if(applied.next()){
+                if(text_col(applied.raw(),0)!=digest)throw std::runtime_error("Migracao "+version+" alterada apos aplicacao; restaurar versao anterior");
+                continue;
+            }
+            transaction_begin();
+            try{
+                exec(content);
+                SqlStmt insert(db_,"INSERT INTO schema_migrations(version,sha256) VALUES(?,?)");
+                insert.bind(1,version);insert.bind(2,digest);insert.next();transaction_commit();
+            }catch(...){transaction_rollback();throw;}
+        }
+    }
 public:
     Store(const fs::path& db_path,const fs::path& project_root){
         fs::create_directories(db_path.parent_path());
@@ -126,20 +209,7 @@ public:
             sqlite3_busy_timeout(db_,3000);
             exec("PRAGMA foreign_keys=ON");exec("PRAGMA journal_mode=WAL");
             exec("CREATE TABLE IF NOT EXISTS schema_migrations(version TEXT PRIMARY KEY, sha256 TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))");
-            const auto migration=project_root/"db/migrations/001_foundation.sql";
-            const auto content=read_text(migration);
-            const auto digest=sha256hex(content);
-            SqlStmt st(db_,"SELECT sha256 FROM schema_migrations WHERE version='001_foundation'");
-            if(st.next()) {
-                if(text_col(st.raw(),0)!=digest) throw std::runtime_error("Migracao 001 alterada apos aplicacao; restaurar versao anterior");
-            } else {
-                transaction_begin();
-                try {
-                    exec(content);
-                    SqlStmt ins(db_,"INSERT INTO schema_migrations(version,sha256) VALUES('001_foundation',?)");
-                    ins.bind(1,digest);ins.next();transaction_commit();
-                } catch(...) {transaction_rollback();throw;}
-            }
+            apply_migrations(project_root);
         }catch(...){sqlite3_close(db_);db_=nullptr;throw;}
     }
     ~Store(){if(db_)sqlite3_close(db_);}
@@ -150,7 +220,7 @@ public:
         for(auto [name,table]:std::vector<std::pair<std::string,std::string>>{{"evidence","evidence"},{"investigations","investigations"},{"links","evidence_links"},{"journal","journal"}}){
             auto sql="SELECT COUNT(*) FROM "+table;SqlStmt st(db_,sql.c_str());st.next();o[name]=sqlite3_column_int64(st.raw(),0);
         }
-        o["version"]="0.1.0";
+        o["version"]=kVersion;
         return o;
     }
     static Obj evidence_row(sqlite3_stmt* s){
@@ -172,9 +242,9 @@ public:
             field(o,"valid_end",32),field(o,"observed_at",32),field(o,"provenance_uri",1000),
             field(o,"source_sha256",64),std::string("not_validated")};
         choice(v[0],{"meteorological_alert","instrument_measurement","documentary_report","derived_indicator","land_cover_classification","other"},"kind");
-        temporal(v[5],"valid_start");temporal(v[6],"valid_end");temporal(v[7],"observed_at");
-        if(!v[5].empty()&&!v[6].empty()&&v[5].size()==v[6].size()&&v[5]>v[6])throw std::invalid_argument("Intervalo temporal invertido");
+        temporal_interval(v[5],v[6]);temporal(v[7],"observed_at");
         if(!is_sha256(v[9]))throw std::invalid_argument("source_sha256 deve conter 64 caracteres hexadecimais");
+        std::transform(v[9].begin(),v[9].end(),v[9].begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});
         std::string payload;
         for(const auto& s:v){payload+=std::to_string(s.size());payload+=':';payload+=s;payload+=';';}
         const auto fingerprint=sha256hex(payload);
@@ -202,8 +272,7 @@ public:
     Obj investigation_add(const Obj& o){
         auto title=required(o,"title",160), question=required(o,"question",4000);
         auto location=field(o,"location_ref",200),start=field(o,"valid_start",32),end=field(o,"valid_end",32);
-        temporal(start,"valid_start");temporal(end,"valid_end");
-        if(!start.empty()&&!end.empty()&&start.size()==end.size()&&start>end)throw std::invalid_argument("Intervalo temporal invertido");
+        temporal_interval(start,end);
         transaction_begin();
         try{
             SqlStmt st(db_,"INSERT INTO investigations(title,question,location_ref,valid_start,valid_end) VALUES(?,?,?,?,?)");
@@ -256,10 +325,10 @@ public:
         transaction_begin();
         try{
             if(!key.empty()){
-                SqlStmt prior(db_,"SELECT id,investigation_id,kind,content,author_label FROM journal WHERE request_key=?");prior.bind(1,key);
+                SqlStmt prior(db_,"SELECT id,kind,content,author_label FROM journal WHERE investigation_id=? AND request_key=?");prior.bind(1,investigation_id);prior.bind(2,key);
                 if(prior.next()){
                     auto st=prior.raw();auto id=sqlite3_column_int64(st,0);
-                    if(sqlite3_column_int64(st,1)!=investigation_id||text_col(st,2)!=kind||text_col(st,3)!=content||text_col(st,4)!=author)throw std::invalid_argument("request_key reutilizada com conteudo divergente");
+                    if(text_col(st,1)!=kind||text_col(st,2)!=content||text_col(st,3)!=author)throw std::invalid_argument("request_key reutilizada com conteudo divergente nesta investigacao");
                     transaction_commit();return {{"id",id},{"created",false}};
                 }
             }
@@ -280,7 +349,7 @@ public:
 using Request=http::request<http::string_body>;
 using Response=http::response<http::string_body>;
 static Response response(http::status status, std::string body, std::string type="application/json; charset=utf-8"){
-    Response res{status,11};res.set(http::field::server,"TESSITURA/0.1.0");
+    Response res{status,11};res.set(http::field::server,"TESSITURA/"+std::string(kVersion));
     res.set(http::field::content_type,type);res.set(http::field::cache_control,"no-store");
     res.set("X-Content-Type-Options","nosniff");
     res.set("X-Frame-Options","DENY");
@@ -292,7 +361,7 @@ static Response bad(http::status status,const std::string& code,const std::strin
     return json_response(status,Obj{{"error",code},{"detail",detail}});
 }
 static Obj parse_body(const Request& req){
-    if(req.body().size()>65536)throw std::invalid_argument("Corpo excede 64 KiB");
+    if(req.body().size()>kMaxBodySize)throw std::invalid_argument("Corpo excede 64 KiB");
     auto value=json::parse(req.body());if(!value.is_object())throw std::invalid_argument("Esperado objeto JSON");
     return value.as_object();
 }
@@ -314,7 +383,7 @@ static Response route(const Request& req,Store& store,const fs::path& root,const
         else if(target=="/style.css")filename="style.css";
         else if(target=="/app.js")filename="app.js";
         if(!filename.empty())return response(http::status::ok,read_text(root/"web"/filename),filename.ends_with(".css")?"text/css; charset=utf-8":filename.ends_with(".js")?"application/javascript; charset=utf-8":"text/html; charset=utf-8");
-        if(target=="/api/health")return json_response(http::status::ok,Obj{{"system","tessitura"},{"version","0.1.0"},{"status","ok"},{"bind",bind_address}});
+        if(target=="/api/health")return json_response(http::status::ok,Obj{{"system","tessitura"},{"version",kVersion},{"status","ok"},{"bind",bind_address}});
         if(target=="/api/v1/capabilities")return json_response(http::status::ok,Obj{{"evidence_registration",true},{"append_only",true},{"investigations",true},{"manual_evidence_linking",true},{"research_journal",true},{"automated_inference",false},{"external_connectors",false},{"scientific_validation",false},{"authentication",false},{"exposure",bind_address=="127.0.0.1"||bind_address=="::1"?"local_only":"local_network"}});
         if(target=="/api/v1/summary")return json_response(http::status::ok,store.summary());
         if(target=="/api/v1/evidence")return json_response(http::status::ok,Obj{{"items",store.evidence_list()}});
@@ -367,17 +436,27 @@ int main(int argc,char** argv){
         asio::io_context io(1);
         const auto address=asio::ip::make_address(host);
         tcp::acceptor acceptor(io,{address,static_cast<unsigned short>(port)});
-        std::cout<<"TESSITURA v0.1.0 | http://"<<host<<":"<<port<<" | "<<db_path<<std::endl;
+        std::cout<<"TESSITURA v"<<kVersion<<" | http://"<<host<<":"<<port<<" | "<<db_path<<std::endl;
         for(;;){
-            tcp::socket sock(io);acceptor.accept(sock);
+            beast::tcp_stream stream(io);acceptor.accept(stream.socket());
             try{
                 beast::flat_buffer buffer;
-                Request request;
-                http::read(sock,buffer,request);
-                auto res=safe_route(request,store,root,host);
-                http::write(sock,res);
+                http::request_parser<http::string_body> parser;parser.body_limit(kMaxBodySize);
+                beast::error_code read_error;
+                stream.expires_after(kHttpTimeout);
+                http::async_read(stream,buffer,parser,[&](beast::error_code ec,std::size_t){read_error=ec;});
+                io.run();io.restart();
+                std::optional<Response> result;
+                if(read_error==http::error::body_limit)result.emplace(bad(http::status::payload_too_large,"payload_too_large","Corpo excede 64 KiB"));
+                else if(read_error)throw boost::system::system_error(read_error);
+                else result.emplace(safe_route(parser.release(),store,root,host));
+                beast::error_code write_error;
+                stream.expires_after(kHttpTimeout);
+                http::async_write(stream,*result,[&](beast::error_code ec,std::size_t){write_error=ec;});
+                io.run();io.restart();
+                if(write_error)throw boost::system::system_error(write_error);
             }catch(const std::exception& e){std::cerr<<"[HTTP] "<<e.what()<<"\n";}
-            beast::error_code ec;sock.shutdown(tcp::socket::shutdown_both,ec);
+            beast::error_code ec;stream.socket().shutdown(tcp::socket::shutdown_both,ec);
         }
     }catch(const std::exception& e){std::cerr<<"TESSITURA: "<<e.what()<<"\n";return 1;}
 }

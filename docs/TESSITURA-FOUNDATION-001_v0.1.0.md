@@ -22,7 +22,7 @@ A unidade principal é **a investigação**, definida por pergunta, recortes esp
 6. **Relação ≠ causa.** `supports`, `contradicts`, `contextualizes` e `questions` indicam vínculo argumentativo, não evidência causal suficiente.
 7. **Hipótese ≠ conclusão.** Nenhuma API pode atribuir status de validação científica; toda evidência nasce `not_validated`.
 8. **Autonomia.** O núcleo funciona offline, sem EVIDA, MÉTIS, MPRR, INMET, AdaptaBrasil ou MapBiomas.
-9. **Local-first e acesso controlado na LAN.** Sem autenticação nesta fase; o script de execução escuta em `0.0.0.0` para redes locais confiáveis e permite restringir a `127.0.0.1`. Não publicar na internet nem importar acervos sensíveis nesta versão.
+9. **Local-first e acesso controlado na LAN.** Sem autenticação nesta fase; o script escuta em `127.0.0.1` por padrão e a LAN exige a opção explícita `TESSITURA_HOST=0.0.0.0`. Não publicar na internet nem importar acervos sensíveis nesta versão.
 10. **Sempre pronto. Sempre incompleto.** Entregar capacidades verificáveis antes de ampliar modelos e algoritmos.
 
 ## 3. Especificação mínima implementada
@@ -40,10 +40,10 @@ A unidade principal é **a investigação**, definida por pergunta, recortes esp
 ## 4. Arquitetura
 
 - **C++26**: servidor REST síncrono inicial com Boost.Beast e Boost.JSON; operações implementadas num núcleo único, deliberadamente simples nesta etapa.
-- **SQLite WAL**: fonte de verdade local, migração versionada com SHA-256 e chaves estrangeiras.
+- **SQLite WAL**: fonte de verdade local, migrações ordenadas e versionadas com SHA-256 e chaves estrangeiras.
 - **OpenSSL**: impressão digital do registro normalizado e verificação do hash da migração, não dos bytes de origem externa.
 - **Web**: HTML/CSS/JS sem bundler ou bibliotecas carregadas remotamente, identidade visual inspirada no MORFO: azul-marinho, azul/ciano, superfícies claras e navegação lateral. Não utiliza arquivos de fontes do MORFO.
-- **Serviço**: porta `18871` em todas as interfaces quando iniciado por `run.sh`, configurável por `TESSITURA_HOST`; payload máximo aceito no JSON da API de 64 KiB (limite de parser HTTP é mais amplo).
+- **Serviço**: porta `18871` em loopback por padrão, configurável por `TESSITURA_HOST`; timeout de 10 segundos e payload máximo de 64 KiB aplicado durante a leitura HTTP.
 
 A arquitetura inicial é um monólito modularizável, não um conjunto prematuro de microsserviços. Não compartilhar diretamente bancos de dados com MÉTIS ou EVIDA.
 
@@ -58,13 +58,14 @@ A arquitetura inicial é um monólito modularizável, não um conjunto prematuro
 | MÉTIS | Resultados de modelos e episódios | Tratar como resultados calculados/hipóteses, não como ocorrência física; citar versão de modelo |
 | MPRR | Perguntas e confrontação crítica | Inspiração metodológica opcional, sem acoplamento ou dependência obrigatória |
 
-Nenhuma dessas integrações está implementada na v0.1.0. Contratos devem anteceder conectores.
+Nenhuma dessas integrações está implementada até a v0.1.1. Contratos devem anteceder conectores.
 
-## 6. Próximas versões candidatas
+## 6. Evolução e próximas versões
 
-- **v0.1.1 — Qualidade do núcleo:** separar módulos de serviço/storage/API; paginação e filtros; JSON schema; validação temporal mais robusta; testes adversariais; e migração 002 não destrutiva.
-- **v0.2.0 — Contrato de evidências:** estados científicos distintos para custódia, fidelidade documental, confiabilidade do método e adequação ao uso; trilhas de revisão independentes.
-- **v0.3.0 — Primeira trajetória retrospectiva:** importador de conjunto de dados controlado e verificação de compatibilidade espacial/temporal; hipóteses rivais apresentadas como candidatas.
+- **v0.1.1 — Qualidade do núcleo (entregue):** canonicalização antes do fingerprint, validação temporal de calendário, `observed_at` na interface, migrações generalizadas, idempotência do diário por investigação, bind seguro, timeout e limite antecipado do corpo HTTP.
+- **v0.1.2 — Modularização:** separar storage, domínio, API, HTTP e migrações sem alterar contratos; preparar paginação e filtros.
+- **v0.2.0 — Grafo argumentativo:** introduzir proposições investigativas como entidade de primeira classe e relacionar evidências ao objeto exato que apoiam, contradizem, contextualizam ou questionam.
+- **v0.3.0 — Revisão e proveniência:** representar revisão sem apagar história e separar fonte externa, artefato documental, extração e evidência usada na investigação.
 - **Futuro**: SQL/PostGIS quando consultas espaciais, volume de dados e multiusuário justificarem. Migração deve preservar a semântica e o histórico original.
 
 ## 7. Critérios de aceite da v0.1.0
@@ -74,7 +75,7 @@ Nenhuma dessas integrações está implementada na v0.1.0. Contratos devem antec
 - Repetição de ingestão idêntica não duplica evidência; alteração do mesmo `request_key` do diário é rejeitada.
 - `UPDATE`/`DELETE` de dados probatórios são bloqueados no banco.
 - Aviso não vira ocorrência, hipótese não vira validação, hash não vira prova causal.
-- Bind configurável e acesso pela LAN verificado; ausência de senha não autoriza exposição na internet.
+- Bind restrito a loopback por padrão; ausência de senha não autoriza exposição na internet.
 
 ## 8. Relação com o percurso anterior
 

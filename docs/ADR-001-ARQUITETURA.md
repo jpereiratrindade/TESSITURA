@@ -3,6 +3,8 @@
 **Status:** Aceita somente para o protótipo v0.1.0
 **Data:** 2026-11-07
 
+As decisões operacionais desta fundação foram refinadas pelo [ADR-002](ADR-002-QUALIDADE-NUCLEO.md), sem alterar seus limites científicos.
+
 ## Contexto
 
 Temos outros projetos operacionais independentes (MÉTIS, EVIDA, MORFO, TRAMA). O novo laboratório não pode converter a necessidade de investigação temporal em acoplamento prematuro a arquiteturas e bases existentes.

@@ -1,6 +1,6 @@
 # TESSITURA — Laboratório de trajetórias e relações socioecológicas
 
-**v0.1.0 · C++26 · SQLite WAL · web local · inspirado visualmente no MORFO**
+**v0.1.1 · C++26 · SQLite WAL · web local · inspirado visualmente no MORFO**
 
 > Faça simples. Depois deixe mais leve. Sempre pronto. Sempre incompleto.
 
@@ -19,10 +19,10 @@ Depois:
 ```bash
 cd /home/jpereiratrindade/dev/cpp/tessitura
 ./run.sh test        # Compila e executa teste local ponta a ponta
-./run.sh             # Inicia em 0.0.0.0:18871 para acesso pela rede local
+./run.sh             # Inicia somente em 127.0.0.1:18871
 ```
 
-Na própria máquina: **http://127.0.0.1:18871**. Em outro dispositivo da rede: **http://IP-DA-MAQUINA:18871**. Para usar outra porta: `TESSITURA_PORT=18872 ./run.sh`. Para restringir novamente ao acesso local: `TESSITURA_HOST=127.0.0.1 ./run.sh`.
+Na própria máquina: **http://127.0.0.1:18871**. Para habilitar conscientemente o acesso por outros dispositivos da rede local, execute `TESSITURA_HOST=0.0.0.0 ./run.sh` e acesse **http://IP-DA-MAQUINA:18871**. Para usar outra porta: `TESSITURA_PORT=18872 ./run.sh`.
 
 No Fedora Atomic/Silverblue, execute dentro de uma toolbox que tenha as dependências instaladas. `run.sh` não instala pacotes. Se houver firewall ativo, libere a porta `18871/tcp` apenas para a rede local.
 
@@ -43,6 +43,8 @@ Os dados ficam em `var/tessitura.sqlite3` (excluído do Git). É possível confi
 - **Aviso não é evento observado.** Um relatório não é medição instrumental.
 - **SHA-256 de fonte registrado ≠ bytes externos auditados.** Esta versão não transfere nem confere arquivos de fonte.
 - **Metadados de evidence são imutáveis** (gatilhos no SQLite). Divergência gera novo registro.
+- A API remove espaços externos e normaliza SHA-256 para minúsculas antes de calcular o fingerprint; a garantia não depende do formulário web.
+- Validade e observação são temporalidades distintas. Datas de calendário impossíveis e intervalos invertidos são rejeitados.
 - **`validation_status=not_validated`** por construção. Não há fluxo de aprovação científica nem inteligência artificial nesta versão.
 - A persistência local não usa banco, credenciais ou código de MÉTIS, EVIDA ou MORFO.
 - Sem autenticação, exponha somente em uma rede local confiável, não publique a porta na internet e não use dados sensíveis.
@@ -72,10 +74,10 @@ curl -sS -X POST http://127.0.0.1:18871/api/v1/investigations \
 
 ## Testes e limitações
 
-`ctest` executa teste HTTP sobre banco temporário e verifica ingestão idempotente, imutabilidade, vínculos, diário, auditoria e declarações de capacidade. Nada é inserido automaticamente no banco de produção.
+`ctest` executa testes sobre bancos temporários e verifica ingestão canônica e idempotente, temporalidade, limite HTTP, imutabilidade, vínculos, diário, auditoria, migração de um banco v0.1.0 e hashes históricos. Nada é inserido automaticamente no banco de produção.
 
-Este protótipo possui **servidor HTTP síncrono de um cliente por vez**, paginação ainda fixa, formulário sem autenticação, validação sintática básica de datas e sem importação de arquivos. Não é um produto pronto para uso público ou dados sensíveis.
+Este protótipo possui **servidor HTTP de um cliente por vez**, com timeout de leitura/escrita de 10 segundos e limite de corpo de 64 KiB aplicado pelo parser. A paginação ainda é fixa; não há autenticação nem importação de arquivos. Não é um produto pronto para uso público ou dados sensíveis.
 
-Consulte: [`docs/TESSITURA-FOUNDATION-001_v0.1.0.md`](docs/TESSITURA-FOUNDATION-001_v0.1.0.md).
+Consulte o [`caderno de fundação`](docs/TESSITURA-FOUNDATION-001_v0.1.0.md) e o [`ADR-002 — Qualidade do núcleo`](docs/ADR-002-QUALIDADE-NUCLEO.md).
 
 Licença: GNU GPLv3, texto integral em [`LICENSE`](LICENSE).

@@ -64,7 +64,7 @@ async function refreshEvidence(){
   const box=$('evidence-list');
   try{const d=await api('/api/v1/evidence');box.replaceChildren();
     if(!d.items.length){empty(box,'Nenhuma evidência registrada. As fontes permanecem externas até ingestão explícita.');return;}
-    d.items.forEach(x=>{const c=element('article',null,'record');c.append(element('span',`#${x.id} · ${x.kind}`,'tag'),element('strong',x.source_name),element('p',x.statement),element('small',`Fonte: ${x.source_ref} · ${x.validation_status}`),element('small',[x.location_ref,x.valid_start,x.valid_end].filter(Boolean).join(' · ')));box.append(c);});
+    d.items.forEach(x=>{const c=element('article',null,'record');c.append(element('span',`#${x.id} · ${x.kind}`,'tag'),element('strong',x.source_name),element('p',x.statement),element('small',`Fonte: ${x.source_ref} · ${x.validation_status}`),element('small',[x.location_ref,x.valid_start&&`Validade: ${x.valid_start}`,x.valid_end&&`até ${x.valid_end}`,x.observed_at&&`Observado: ${x.observed_at}`].filter(Boolean).join(' · ')));box.append(c);});
   }catch(e){empty(box,e.message);}
 }
 async function refreshAudit(){
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('refresh-evidence').addEventListener('click',refreshEvidence);
   $('refresh-audit').addEventListener('click',refreshAudit);
   $('form-investigation').addEventListener('submit',e=>{e.preventDefault();postForm(e.currentTarget,'/api/v1/investigations','investigation-message',async d=>{await refreshInvestigations();await refreshSummary();await openInvestigation(d.id);});});
-  $('form-evidence').addEventListener('submit',e=>{e.preventDefault();postForm(e.currentTarget,'/api/v1/evidence','evidence-message',async()=>{await refreshEvidence();await refreshSummary();});});
+  $('form-evidence').addEventListener('submit',e=>{e.preventDefault();postForm(e.currentTarget,'/api/v1/evidence','evidence-message',async()=>{await refreshEvidence();await refreshSummary();},o=>({...o,observed_at:o.observed_at?new Date(o.observed_at).toISOString():''}));});
   $('form-link').addEventListener('submit',e=>{e.preventDefault();if(!activeInvestigation)return;postForm(e.currentTarget,`/api/v1/investigations/${activeInvestigation}/links`,'link-message',async()=>{await openInvestigation(activeInvestigation);await refreshSummary();},o=>({...o,evidence_id:Number(o.evidence_id)}));});
   $('form-journal').addEventListener('submit',e=>{e.preventDefault();if(!activeInvestigation)return;postForm(e.currentTarget,`/api/v1/investigations/${activeInvestigation}/journal`,'journal-message',async()=>{await openInvestigation(activeInvestigation);await refreshSummary();});});
   refreshSummary();

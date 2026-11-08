@@ -22,5 +22,5 @@ case "$MODE" in
   build) echo 'Compilação concluída.';;
   doctor) ./build/tessitura-server --doctor --root "$PWD" --db "${TESSITURA_DB:-$PWD/var/tessitura.sqlite3}";;
   test) ctest --test-dir build --output-on-failure;;
-  serve) exec ./build/tessitura-server --root "$PWD" --db "${TESSITURA_DB:-$PWD/var/tessitura.sqlite3}" --host "${TESSITURA_HOST:-0.0.0.0}" --port "${TESSITURA_PORT:-18871}";;
+  serve) exec ./build/tessitura-server --root "$PWD" --db "${TESSITURA_DB:-$PWD/var/tessitura.sqlite3}" --host "${TESSITURA_HOST:-127.0.0.1}" --port "${TESSITURA_PORT:-18871}";;
 esac
