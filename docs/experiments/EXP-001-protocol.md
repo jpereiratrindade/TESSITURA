@@ -11,6 +11,18 @@ Quais classes de cobertura e uso da terra são mapeadas para Bagé em 2023 e qua
 
 A pergunta não pressupõe associação, influência ou causalidade. O resultado admissível inclui incompatibilidade ou evidência insuficiente.
 
+## Linhagem investigativa
+
+O identificador `EXP-001` nomeia o protocolo executado, não uma entidade que antecede a pergunta. A ordem preservada é:
+
+1. investigação aberta com pergunta, Bagé/RS e período de `2023-01-01` a `2023-12-31`;
+2. protocolo EXP-001 aceito em `2026-11-07` para um recorte explícito dessa investigação;
+3. fontes obtidas e transformações determinísticas executadas;
+4. RUN-001 executada em `2026-11-07` e publicada como resultado da investigação;
+5. objeção e decisão de não inferência registradas no dossiê.
+
+A interface deve apresentar a execução dentro do acervo de investigações. Métricas específicas são resultados publicados, não atributos universais de toda investigação.
+
 ## Recorte e justificativa
 
 - **Território de referência:** município de Bagé/RS, código IBGE `4301602`.

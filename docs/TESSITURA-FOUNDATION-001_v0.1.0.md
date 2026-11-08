@@ -15,7 +15,7 @@ A unidade principal é **a investigação**, definida por pergunta, recortes esp
 ## 2. Princípios constitutivos
 
 1. **Fontes heterogêneas permanecem heterogêneas.** Aviso meteorológico, medição instrumental, declaração documental, indicador derivado e classificação cartográfica têm naturezas distintas.
-2. **Tempo do fenômeno ≠ tempo da observação ≠ tempo da ingestão.** O esquema guarda `valid_start`, `valid_end`, `observed_at`, `inserted_at`; a v0.1.0 não faz arbitragem temporal ou inferência de precedência causal.
+2. **Tempo do fenômeno ≠ tempo da observação ≠ tempo da ingestão.** O esquema guarda `valid_start`, `valid_end`, `observed_at`, `observed_start`, `observed_end`, `inserted_at`; não faz arbitragem temporal ou inferência de precedência causal.
 3. **Integridade ≠ validade científica.** SHA-256 identifica bytes/metadados, não verifica observação ou interpretação. `source_sha256` nunca é inventado nem recalculado neste piloto.
 4. **Ausência ≠ zero.** Campos opcionais permanecem vazios; não completar informações desconhecidas por inferência.
 5. **Registro imutável, interpretação revisável.** Evidências, links, diário e auditoria são append-only; novas interpretações devem gerar novos registros, nunca substituir histórias anteriores.
@@ -64,7 +64,8 @@ Até a v0.1.1, nenhuma dessas integrações estava implementada. A v0.1.2 demons
 
 - **v0.1.1 — Qualidade do núcleo (entregue):** canonicalização antes do fingerprint, validação temporal de calendário, `observed_at` na interface, migrações generalizadas, idempotência do diário por investigação, bind seguro, timeout e limite antecipado do corpo HTTP.
 - **v0.1.2 — Prova vertical (entregue):** EXP-001 reproduzível com dois recortes reais, contrato versionado, hashes, incompatibilidade explícita de suportes, dossiê e repetição idempotente. A mudança de sequência está registrada no ADR-003.
-- **Próxima decisão:** avaliar as lacunas observadas no EXP-001 antes de escolher entre modularização, proveniência estruturada, intervalo de observação ou proposições.
+- **v0.1.4 — Investigação publicada e tempos explícitos (entregue):** o EXP-001 integra o acervo como execução de uma investigação com pergunta, recorte, protocolo e datas; evidências aceitam instante ou janela observada e o dossiê expõe período referido, observação, vínculo e registro.
+- **Próxima decisão:** avaliar as lacunas observadas no EXP-001 antes de escolher entre modularização, proveniência estruturada ou proposições.
 - **v0.2.0 — Grafo argumentativo:** introduzir proposições investigativas como entidade de primeira classe e relacionar evidências ao objeto exato que apoiam, contradizem, contextualizam ou questionam.
 - **v0.3.0 — Revisão e proveniência:** representar revisão sem apagar história e separar fonte externa, artefato documental, extração e evidência usada na investigação.
 - **Futuro**: SQL/PostGIS quando consultas espaciais, volume de dados e multiusuário justificarem. Migração deve preservar a semântica e o histórico original.

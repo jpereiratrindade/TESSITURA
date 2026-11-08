@@ -49,11 +49,18 @@ def main():
             else:
                 raise AssertionError("Servidor nao iniciou")
             assert h["bind"] == "127.0.0.1"
-            assert h["version"] == "0.1.2"
+            assert h["version"] == "0.1.4"
             caps = req("/api/v1/capabilities")
             assert caps["exposure"] == "local_only"
             assert caps["automated_inference"] is False
             assert caps["scientific_validation"] is False
+            assert caps["published_investigations"] is True
+            assert caps["observation_intervals"] is True
+            experiment = req("/api/v1/investigations/published/exp-001")
+            assert experiment["experiment_id"] == "EXP-001"
+            assert experiment["compatibility"]["overall"] == "contextual_only"
+            assert experiment["compatibility"]["causal_claim"] is False
+            assert experiment["metrics"]["inmet"]["valid_hours"] == 744
             assert req("/api/v1/summary")["evidence"] == 0
             record = {"kind": "meteorological_alert", "source_name": "  INMET (fixture local)  ",
                       "source_ref": "TEST-AVISO-1", "statement": "Aviso declarado, sem ocorrencia confirmada.",
@@ -63,6 +70,8 @@ def main():
             assert req("/api/v1/evidence", {**record, "source_sha256": "INVALID"}, 400)["error"] == "invalid_input"
             assert req("/api/v1/evidence", {**record, "valid_start": "2026-02-30"}, 400)["error"] == "invalid_input"
             assert req("/api/v1/evidence", {**record, "valid_end": "2026-11-09T00:00:00Z"}, 400)["error"] == "invalid_input"
+            assert req("/api/v1/evidence", {**record, "observed_start": "2026-11-08T10:00:00Z",
+                       "observed_end": "2026-11-08T11:00:00Z"}, 400)["error"] == "invalid_input"
             first = req("/api/v1/evidence", record, 201)
             assert first["created"] is True
             canonical = {**record, "source_name": "INMET (fixture local)", "source_sha256": "a" * 64}
@@ -73,6 +82,7 @@ def main():
             assert evidence[0]["source_name"] == "INMET (fixture local)"
             assert evidence[0]["source_sha256"] == "a" * 64
             assert evidence[0]["observed_at"] == record["observed_at"]
+            assert evidence[0]["observed_start"] == "" and evidence[0]["observed_end"] == ""
             inv = req("/api/v1/investigations", {"title": "Trajetorias hipoteticas",
                   "question": "Quais evidencias e limitacoes existem?", "location_ref": "4301602"}, 201)
             inv_id = inv["id"]
@@ -107,7 +117,7 @@ def main():
                 else:
                     raise AssertionError("Evidencia deveria ser imutavel")
                 assert con.execute("PRAGMA foreign_key_check").fetchall() == []
-                assert con.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == 2
+                assert con.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == 3
             finally:
                 con.close()
             print("OK: HTTP, persistencia, idempotencia, integridade, diario e limite epistêmico")

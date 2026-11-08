@@ -1,6 +1,6 @@
 # TESSITURA — Laboratório de trajetórias e relações socioecológicas
 
-**v0.1.2 · C++26 · SQLite WAL · integração científica vertical · web local**
+**v0.1.4 · C++26 · SQLite WAL · investigações temporalmente explícitas · web local**
 
 > Faça simples. Depois deixe mais leve. Sempre pronto. Sempre incompleto.
 
@@ -48,13 +48,15 @@ O resultado é deliberadamente `contextual_only`: uma classificação anual agre
 
 `./run.sh experiment` usa `var/exp001/tessitura.sqlite3`, separado do banco padrão, repete a importação para verificar idempotência e grava `report.json` e `dossier.md` em `var/exp001/output/`. O protocolo completo está em [`docs/experiments/EXP-001-protocol.md`](docs/experiments/EXP-001-protocol.md).
 
+Na v0.1.4, o EXP-001 aparece no acervo como **investigação publicada**, não como módulo autônomo. `GET /api/v1/investigations/published/exp-001` apresenta pergunta, recorte, período investigado, protocolo, execução, períodos das fontes, janela observada, métricas e limites. A visualização não executa análise remota ou inferência no navegador.
+
 ## Invariantes
 
 - **Aviso não é evento observado.** Um relatório não é medição instrumental.
 - **SHA-256 ≠ validade científica.** O EXP-001 confere os bytes contratados, mas isso não autentica o fenômeno nem valida uma interpretação.
 - **Metadados de evidence são imutáveis** (gatilhos no SQLite). Divergência gera novo registro.
 - A API remove espaços externos e normaliza SHA-256 para minúsculas antes de calcular o fingerprint; a garantia não depende do formulário web.
-- Validade e observação são temporalidades distintas. Datas de calendário impossíveis e intervalos invertidos são rejeitados.
+- Período referido, instante ou janela observada e momento do registro são temporalidades distintas. Datas impossíveis, intervalos invertidos e mistura de instante com janela são rejeitados.
 - **`validation_status=not_validated`** por construção. Não há fluxo de aprovação científica nem inteligência artificial nesta versão.
 - A persistência local não usa banco, credenciais ou código de MÉTIS, EVIDA ou MORFO.
 - Sem autenticação, exponha somente em uma rede local confiável, não publique a porta na internet e não use dados sensíveis.

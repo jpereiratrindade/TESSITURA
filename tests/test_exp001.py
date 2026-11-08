@@ -36,6 +36,12 @@ def main():
         assert first["execution"]["second_journal_created"] == 0
 
         report = json.loads((output / "report.json").read_text(encoding="utf-8"))
+        published = json.loads((root / "data/exp001/published-result.json").read_text(encoding="utf-8"))
+        assert published["metrics"]["mapbiomas"]["class_count"] == report["metrics"]["mapbiomas"]["class_count"]
+        assert published["metrics"]["mapbiomas"]["total_area_ha"] == report["metrics"]["mapbiomas"]["total_area_ha"]
+        assert published["metrics"]["inmet"] == report["metrics"]["inmet"]
+        assert published["compatibility"]["overall"] == report["compatibility"]["overall"]
+        assert published["compatibility"]["causal_claim"] == report["compatibility"]["causal_claim"]
         assert report["compatibility"]["spatial"]["status"] == "not_directly_comparable"
         assert report["compatibility"]["causal_claim"] is False
         assert report["metrics"]["inmet"]["valid_hours"] == 744
@@ -53,6 +59,8 @@ def main():
             counts = tuple(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
                            for table in ("evidence", "investigations", "evidence_links", "journal"))
             assert counts == (2, 1, 2, 3)
+            observed = connection.execute("SELECT observed_start,observed_end FROM evidence WHERE source_name LIKE 'INMET A827%'").fetchone()
+            assert observed == ("2023-01-01T00:00:00Z", "2023-01-31T23:00:00Z")
             assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         finally:
             connection.close()

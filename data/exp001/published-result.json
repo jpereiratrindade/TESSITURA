@@ -1,0 +1,104 @@
+{
+  "experiment_id": "EXP-001",
+  "run_id": "001",
+  "kind": "published_investigation_execution",
+  "title": "Bagé 2023 — cobertura da terra e meteorologia observada",
+  "status": "executed",
+  "question": "Quais classes de cobertura e uso da terra são mapeadas para Bagé em 2023 e quais condições de temperatura e precipitação foram observadas pela estação A827 em janeiro; essas descrições podem ser diretamente comparadas?",
+  "investigation": {
+    "title": "EXP-001 · Bagé 2023 · cobertura e meteorologia",
+    "state": "published",
+    "opened_at": "2026-11-07",
+    "location_ref": "Bagé/RS · IBGE:4301602",
+    "valid_start": "2023-01-01",
+    "valid_end": "2023-12-31"
+  },
+  "protocol": {
+    "id": "EXP-001",
+    "version": "1.0.0",
+    "accepted_at": "2026-11-07"
+  },
+  "execution": {
+    "id": "RUN-001",
+    "executed_at": "2026-11-07"
+  },
+  "sources": [
+    {
+      "publisher": "Projeto MapBiomas",
+      "dataset": "Coleção 11 — tabela municipal v1",
+      "nature": "classificação anual agregada",
+      "support": "polígono municipal",
+      "valid_start": "2023-01-01",
+      "valid_end": "2023-12-31",
+      "observed_start": null,
+      "observed_end": null,
+      "source_published": "2026-08-12",
+      "obtained_at": "2026-11-07",
+      "timezone": null,
+      "license": "CC BY 4.0",
+      "subset_sha256": "1822832e28324a93293eebeb715681a3624287626e37184e76168b7440de6da8",
+      "source_uri": "https://brasil.mapbiomas.org/iniciativas-e-produtos/cobertura-e-uso-da-terra/cobertura-30m/cobertura/"
+    },
+    {
+      "publisher": "INMET",
+      "dataset": "Dados Históricos 2023 — estação automática A827",
+      "nature": "medições horárias brutas agregadas por dia",
+      "support": "ponto da estação",
+      "valid_start": "2023-01-01",
+      "valid_end": "2023-01-31",
+      "observed_start": "2023-01-01T00:00:00Z",
+      "observed_end": "2023-01-31T23:00:00Z",
+      "source_published": null,
+      "obtained_at": "2026-11-07",
+      "timezone": "UTC",
+      "license": "dados públicos e gratuitos; uso sob responsabilidade do usuário",
+      "subset_sha256": "bbf317ac87cfaa59720bedcb44eb33662b23b7ecd87edbd08b6798927c1d12de",
+      "source_uri": "https://portal.inmet.gov.br/dadoshistoricos"
+    }
+  ],
+  "metrics": {
+    "mapbiomas": {
+      "class_count": 13,
+      "total_area_ha": 409024.9312321195,
+      "top_classes": [
+        {"class_id": 12, "class": "Formação Campestre", "area_ha": 194026.0800573124, "share_percent": 47.43624782793586},
+        {"class_id": 3, "class": "Formação Florestal", "area_ha": 56085.24125009862, "share_percent": 13.711937089299465},
+        {"class_id": 39, "class": "Soja", "area_ha": 54704.93223792916, "share_percent": 13.374473793844219},
+        {"class_id": 21, "class": "Mosaico de Usos", "area_ha": 51021.67808557057, "share_percent": 12.473977547499675},
+        {"class_id": 9, "class": "Silvicultura", "area_ha": 18167.11296264051, "share_percent": 4.44156616759646}
+      ]
+    },
+    "inmet": {
+      "days": 31,
+      "expected_hours": 744,
+      "valid_hours": 744,
+      "missing_hours": 0,
+      "precipitation_total_mm": 34.0,
+      "temperature_mean_c": 25.142473129032258,
+      "temperature_min_c": 12.4,
+      "temperature_max_c": 35.5
+    }
+  },
+  "compatibility": {
+    "temporal": {
+      "status": "overlap_with_granularity_mismatch",
+      "detail": "Janeiro de 2023 está contido no mapa anual, mas hora/dia e ano não são granularidades equivalentes."
+    },
+    "spatial": {
+      "status": "not_directly_comparable",
+      "detail": "A estatística do polígono municipal e a medição pontual A827 possuem suportes espaciais distintos."
+    },
+    "overall": "contextual_only",
+    "causal_claim": false
+  },
+  "reproducibility": {
+    "adapter_version": "exp001-adapter/1.0.0",
+    "tests_passed": 3,
+    "tests_total": 3,
+    "first_pass_created": {"investigation": 1, "evidence": 2, "links": 2, "journal": 3},
+    "second_pass_created": {"investigation": 0, "evidence": 0, "links": 0, "journal": 0},
+    "protocol_path": "docs/experiments/EXP-001-protocol.md",
+    "report_path": "docs/experiments/EXP-001-run-001.md"
+  },
+  "conclusion": "As duas fontes podem coexistir no mesmo dossiê como contexto documentado, mas este recorte não autoriza comparação espacial direta, associação estatística ou explicação causal entre cobertura e meteorologia."
+}

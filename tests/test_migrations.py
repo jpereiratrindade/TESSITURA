@@ -34,12 +34,15 @@ def main():
 
         result = subprocess.run([exe, "--root", str(root), "--db", str(db), "--doctor"],
                                 capture_output=True, text=True, check=True)
-        assert json.loads(result.stdout)["version"] == "0.1.2"
+        assert json.loads(result.stdout)["version"] == "0.1.4"
 
         connection = sqlite3.connect(db)
         try:
             versions = connection.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
-            assert versions == [("001_foundation",), ("002_journal_request_scope",)]
+            assert versions == [("001_foundation",), ("002_journal_request_scope",),
+                                ("003_evidence_observation_interval",)]
+            columns = {row[1] for row in connection.execute("PRAGMA table_info(evidence)")}
+            assert {"observed_at", "observed_start", "observed_end"} <= columns
             connection.execute("""INSERT INTO journal(investigation_id,kind,content,request_key)
                                 VALUES(2,'note','Outro contexto','shared-key')""")
             try:

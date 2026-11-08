@@ -356,6 +356,8 @@ def register_once(base_url: str, root: Path, analysis: dict) -> dict:
             "location_ref": "INMET:A827 (-31.34777777,-54.01333333; ponto)",
             "valid_start": "2023-01-01",
             "valid_end": "2023-01-31",
+            "observed_start": "2023-01-01T00:00:00Z",
+            "observed_end": "2023-01-31T23:00:00Z",
             "provenance_uri": records["INMET"]["provenance"]["source_uri"],
             "source_sha256": records["INMET"]["provenance"]["subset_sha256"],
         },

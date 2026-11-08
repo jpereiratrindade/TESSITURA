@@ -31,7 +31,7 @@ namespace http = beast::http;
 using tcp = asio::ip::tcp;
 using Obj = json::object;
 using Arr = json::array;
-constexpr std::string_view kVersion = "0.1.2";
+constexpr std::string_view kVersion = "0.1.4";
 constexpr std::uint64_t kMaxBodySize = 64 * 1024;
 constexpr auto kHttpTimeout = std::chrono::seconds(10);
 
@@ -104,8 +104,8 @@ static std::optional<TemporalValue> temporal(const std::string& s, std::string_v
     }
     return TemporalValue{true,micros};
 }
-static void temporal_interval(const std::string& start,const std::string& end) {
-    const auto first=temporal(start,"valid_start"),last=temporal(end,"valid_end");
+static void temporal_interval(const std::string& start,const std::string& end,std::string_view start_name="valid_start",std::string_view end_name="valid_end") {
+    const auto first=temporal(start,start_name),last=temporal(end,end_name);
     if(!first||!last)return;
     if(first->includes_time!=last->includes_time)throw std::invalid_argument("Inicio e fim precisam usar a mesma granularidade temporal");
     if(first->microseconds>last->microseconds)throw std::invalid_argument("Intervalo temporal invertido");
@@ -227,31 +227,34 @@ public:
         return {{"id",sqlite3_column_int64(s,0)},{"kind",text_col(s,1)},{"source_name",text_col(s,2)},
         {"source_ref",text_col(s,3)},{"statement",text_col(s,4)},{"location_ref",text_col(s,5)},
         {"valid_start",text_col(s,6)},{"valid_end",text_col(s,7)},{"observed_at",text_col(s,8)},
-        {"provenance_uri",text_col(s,9)},{"source_sha256",text_col(s,10)},
-        {"validation_status",text_col(s,11)},{"inserted_at",text_col(s,12)},
-        {"record_fingerprint",text_col(s,13)}};
+        {"observed_start",text_col(s,9)},{"observed_end",text_col(s,10)},
+        {"provenance_uri",text_col(s,11)},{"source_sha256",text_col(s,12)},
+        {"validation_status",text_col(s,13)},{"inserted_at",text_col(s,14)},
+        {"record_fingerprint",text_col(s,15)}};
     }
     Arr evidence_list(){
-        SqlStmt st(db_,"SELECT id,kind,source_name,source_ref,statement,location_ref,valid_start,valid_end,observed_at,provenance_uri,source_sha256,validation_status,inserted_at,record_fingerprint FROM evidence ORDER BY id DESC LIMIT 100");
+        SqlStmt st(db_,"SELECT id,kind,source_name,source_ref,statement,location_ref,valid_start,valid_end,observed_at,observed_start,observed_end,provenance_uri,source_sha256,validation_status,inserted_at,record_fingerprint FROM evidence ORDER BY id DESC LIMIT 100");
         Arr a;while(st.next())a.emplace_back(evidence_row(st.raw()));return a;
     }
     Obj evidence_add(const Obj& o){
-        std::array<std::string,11> v = {
+        std::array<std::string,13> v = {
             required(o,"kind",80),required(o,"source_name",160),required(o,"source_ref",512),
             required(o,"statement",4000),field(o,"location_ref",200),field(o,"valid_start",32),
-            field(o,"valid_end",32),field(o,"observed_at",32),field(o,"provenance_uri",1000),
-            field(o,"source_sha256",64),std::string("not_validated")};
+            field(o,"valid_end",32),field(o,"observed_at",32),field(o,"observed_start",32),
+            field(o,"observed_end",32),field(o,"provenance_uri",1000),field(o,"source_sha256",64),
+            std::string("not_validated")};
         choice(v[0],{"meteorological_alert","instrument_measurement","documentary_report","derived_indicator","land_cover_classification","other"},"kind");
-        temporal_interval(v[5],v[6]);temporal(v[7],"observed_at");
-        if(!is_sha256(v[9]))throw std::invalid_argument("source_sha256 deve conter 64 caracteres hexadecimais");
-        std::transform(v[9].begin(),v[9].end(),v[9].begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});
+        temporal_interval(v[5],v[6]);temporal(v[7],"observed_at");temporal_interval(v[8],v[9],"observed_start","observed_end");
+        if(!v[7].empty()&&(!v[8].empty()||!v[9].empty()))throw std::invalid_argument("Use observed_at para instante ou observed_start/observed_end para intervalo, nao ambos");
+        if(!is_sha256(v[11]))throw std::invalid_argument("source_sha256 deve conter 64 caracteres hexadecimais");
+        std::transform(v[11].begin(),v[11].end(),v[11].begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});
         std::string payload;
         for(const auto& s:v){payload+=std::to_string(s.size());payload+=':';payload+=s;payload+=';';}
         const auto fingerprint=sha256hex(payload);
         transaction_begin();
         try {
-            SqlStmt st(db_,"INSERT OR IGNORE INTO evidence(record_fingerprint,kind,source_name,source_ref,statement,location_ref,valid_start,valid_end,observed_at,provenance_uri,source_sha256) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-            st.bind(1,fingerprint);for(int i=0;i<10;i++)st.bind(i+2,v[i]);st.next();
+            SqlStmt st(db_,"INSERT OR IGNORE INTO evidence(record_fingerprint,kind,source_name,source_ref,statement,location_ref,valid_start,valid_end,observed_at,observed_start,observed_end,provenance_uri,source_sha256) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            st.bind(1,fingerprint);for(int i=0;i<12;i++)st.bind(i+2,v[i]);st.next();
             bool created=sqlite3_changes(db_)>0;
             SqlStmt find(db_,"SELECT id FROM evidence WHERE record_fingerprint=?");find.bind(1,fingerprint);find.next();
             auto id=sqlite3_column_int64(find.raw(),0);
@@ -285,12 +288,15 @@ public:
         SqlStmt st(db_,"SELECT id,title,question,location_ref,valid_start,valid_end,state,created_at FROM investigations WHERE id=?");
         st.bind(1,id);if(!st.next())throw std::out_of_range("Investigacao nao encontrada");
         Obj item=investigation_row(st.raw());
-        SqlStmt links(db_,"SELECT l.id,l.evidence_id,l.relation,l.justification,l.created_at,e.kind,e.source_name,e.statement,e.validation_status FROM evidence_links l JOIN evidence e ON e.id=l.evidence_id WHERE l.investigation_id=? ORDER BY l.id");links.bind(1,id);
+        SqlStmt links(db_,"SELECT l.id,l.evidence_id,l.relation,l.justification,l.created_at,e.kind,e.source_name,e.statement,e.validation_status,e.location_ref,e.valid_start,e.valid_end,e.observed_at,e.observed_start,e.observed_end,e.inserted_at FROM evidence_links l JOIN evidence e ON e.id=l.evidence_id WHERE l.investigation_id=? ORDER BY l.id");links.bind(1,id);
         Arr evidences;while(links.next()){
             auto s=links.raw();evidences.emplace_back(Obj{{"id",sqlite3_column_int64(s,0)},{"evidence_id",sqlite3_column_int64(s,1)},
             {"relation",text_col(s,2)},{"justification",text_col(s,3)},{"created_at",text_col(s,4)},
             {"kind",text_col(s,5)},{"source_name",text_col(s,6)},
-            {"statement",text_col(s,7)},{"validation_status",text_col(s,8)}});
+            {"statement",text_col(s,7)},{"validation_status",text_col(s,8)},
+            {"location_ref",text_col(s,9)},{"valid_start",text_col(s,10)},{"valid_end",text_col(s,11)},
+            {"observed_at",text_col(s,12)},{"observed_start",text_col(s,13)},
+            {"observed_end",text_col(s,14)},{"inserted_at",text_col(s,15)}});
         }
         item["evidence_links"]=std::move(evidences);
         SqlStmt journal(db_,"SELECT id,kind,content,author_label,created_at FROM journal WHERE investigation_id=? ORDER BY id");journal.bind(1,id);
@@ -384,7 +390,8 @@ static Response route(const Request& req,Store& store,const fs::path& root,const
         else if(target=="/app.js")filename="app.js";
         if(!filename.empty())return response(http::status::ok,read_text(root/"web"/filename),filename.ends_with(".css")?"text/css; charset=utf-8":filename.ends_with(".js")?"application/javascript; charset=utf-8":"text/html; charset=utf-8");
         if(target=="/api/health")return json_response(http::status::ok,Obj{{"system","tessitura"},{"version",kVersion},{"status","ok"},{"bind",bind_address}});
-        if(target=="/api/v1/capabilities")return json_response(http::status::ok,Obj{{"evidence_registration",true},{"append_only",true},{"investigations",true},{"manual_evidence_linking",true},{"research_journal",true},{"automated_inference",false},{"external_connectors",false},{"scientific_validation",false},{"authentication",false},{"exposure",bind_address=="127.0.0.1"||bind_address=="::1"?"local_only":"local_network"}});
+        if(target=="/api/v1/capabilities")return json_response(http::status::ok,Obj{{"evidence_registration",true},{"append_only",true},{"investigations",true},{"manual_evidence_linking",true},{"research_journal",true},{"published_investigations",true},{"observation_intervals",true},{"automated_inference",false},{"external_connectors",false},{"scientific_validation",false},{"authentication",false},{"exposure",bind_address=="127.0.0.1"||bind_address=="::1"?"local_only":"local_network"}});
+        if(target=="/api/v1/investigations/published/exp-001"||target=="/api/v1/experiments/exp-001")return response(http::status::ok,read_text(root/"data"/"exp001"/"published-result.json"));
         if(target=="/api/v1/summary")return json_response(http::status::ok,store.summary());
         if(target=="/api/v1/evidence")return json_response(http::status::ok,Obj{{"items",store.evidence_list()}});
         if(target=="/api/v1/investigations")return json_response(http::status::ok,Obj{{"items",store.investigations()}});
