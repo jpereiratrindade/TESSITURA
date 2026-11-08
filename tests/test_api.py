@@ -106,6 +106,8 @@ def main():
             with urllib.request.urlopen(base + "/", timeout=3) as r:
                 page = r.read()
                 assert b'TESSITURA' in page and b'observed_at' in page
+                assert b'ADAPTABRASIL' in page and b'EVIDA' in page
+                assert b'Adaptador contratual offline' in page
             with urllib.request.urlopen(base + "/style.css", timeout=3) as r:
                 assert b'--navy:' in r.read()
             con = sqlite3.connect(db)

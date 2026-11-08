@@ -92,4 +92,6 @@ Este protótipo possui **servidor HTTP de um cliente por vez**, com timeout de l
 
 Consulte o [`caderno de fundação`](docs/TESSITURA-FOUNDATION-001_v0.1.0.md), o [`protocolo EXP-001`](docs/experiments/EXP-001-protocol.md) e o [`ADR-003 — Prova vertical`](docs/ADR-003-PRIMEIRA-INTEGRACAO.md).
 
+O estado e o percurso de INMET, AdaptaBrasil e EVIDA estão consolidados no [`mapa de integrações`](docs/INTEGRACOES-001.md). A interface apresenta a mesma distinção entre registro manual, adaptador demonstrado, conector genérico e integração institucional.
+
 Licença: GNU GPLv3, texto integral em [`LICENSE`](LICENSE).

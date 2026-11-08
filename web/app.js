@@ -1,6 +1,6 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
-const names = {overview:'Visão geral',experiment:'Investigações / Publicada',investigations:'Investigações',evidence:'Evidências',audit:'Integridade e limites'};
+const names = {overview:'Visão geral',experiment:'Investigações / Publicada',investigations:'Investigações',evidence:'Evidências',integrations:'Integrações',audit:'Integridade e limites'};
 let activeInvestigation = null;
 const decimal = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:1,minimumFractionDigits:1});
 const dateOnlyFormatter = new Intl.DateTimeFormat('pt-BR');
