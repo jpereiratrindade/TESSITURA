@@ -95,3 +95,9 @@ Consulte o [`caderno de fundação`](docs/TESSITURA-FOUNDATION-001_v0.1.0.md), o
 O estado e o percurso de INMET, AdaptaBrasil e EVIDA estão consolidados no [`mapa de integrações`](docs/INTEGRACOES-001.md). A interface apresenta a mesma distinção entre registro manual, adaptador demonstrado, conector genérico e integração institucional.
 
 Licença: GNU GPLv3, texto integral em [`LICENSE`](LICENSE).
+
+## Premissas de desenvolvimento
+
+**Simples, leve. Sempre pronto. Sempre incompleto!**
+
+[Significado e símbolos das premissas](docs/sister-principles/README.md).

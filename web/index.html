@@ -2,7 +2,16 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TESSITURA · Laboratório de trajetórias socioecológicas</title>
 <meta name="description" content="Laboratório local-first de relações, trajetórias e investigação científica rastreável">
-<link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script><style>
+/* Princípios SisTer: compromissos de desenvolvimento, independentes da saúde do serviço. */
+.sister-principles{grid-column:1/-1;padding:16px 0;font:inherit;color:inherit}
+.sister-principles-title{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;opacity:.8}
+.sister-principles-list{list-style:none!important;display:flex;flex-wrap:wrap;gap:10px 22px;margin:10px 0 0!important;padding:0!important}
+.sister-principles-list li{display:flex!important;align-items:center;gap:8px;font-size:12px;line-height:1.5;color:inherit}
+.sister-principles-list svg{display:block;width:20px!important;height:20px!important;flex:0 0 20px;fill:none!important;stroke:currentColor!important;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+aside .sister-principles-list{display:grid;gap:8px}
+</style>
+</head>
 <body>
 <a class="skip" href="#main">Ir ao conteúdo principal</a>
 <div class="shell">
@@ -81,6 +90,6 @@
 <p class="notice">O hash fornecido será armazenado, mas não verificado nesta versão. O registro recebe sempre o estado <strong>não validado</strong>.</p><button class="btn btn-primary" type="submit">Registrar fonte</button><p class="form-message" role="status" id="evidence-message"></p></form>
 <div class="panel stack"><div class="section-title"><div><h2>Acervo de evidências</h2><p>Os registros originais não podem ser editados ou apagados via API.</p></div><button type="button" class="btn btn-outline btn-small" id="refresh-evidence">↻ Atualizar</button></div><div id="evidence-list" class="record-list" aria-live="polite"></div></div></div></section>
 <section id="view-audit" class="view hidden"><div class="pageintro"><div><span class="section-kicker">GOVERNANÇA EPISTÊMICA</span><h1>Integridade e limites</h1><p>Proveniência, rastreabilidade e limites explícitos: condições necessárias, nunca provas automáticas de validade científica.</p></div></div><div class="grid-2"><article class="panel"><h2>Invariantes da versão 0.1.4</h2><ul class="bullets"><li>Informação de fonte ≠ ocorrência física comprovada.</li><li>Associação ≠ causalidade.</li><li>SHA-256 conferido ≠ validade científica.</li><li>Ausência de registro ≠ ausência de fenômeno.</li><li>Contradição e objeção permanecem registráveis.</li><li>Reprocessamento canônico não duplica uma evidência.</li><li>Sem autenticação: acesso local por padrão; LAN exige configuração explícita.</li></ul></article><article class="panel"><h2>Estrutura inicial</h2><p>SQLite WAL, migrações ordenadas e verificadas por hash, tabelas de evidências, investigações, relações e diário com bloqueio a alteração/exclusão de registros probatórios.</p><p class="notice">Append-only não significa inviolável, autenticado ou cientificamente validado. O EXP-001 é uma execução publicada de uma investigação por contrato, não um conector genérico; não há inferência automatizada ou modelos de linguagem.</p></article></div><section class="panel audit-panel"><div class="section-title"><h2>Histórico operacional</h2><button class="btn btn-outline btn-small" id="refresh-audit" type="button">↻ Atualizar</button></div><div id="audit-list" class="record-list" aria-live="polite"></div></section></section>
-</main><footer><span>TESSITURA · identidade visual inspirada no MORFO · licença GPL-3.0</span><span>Sempre pronto. Sempre incompleto.</span></footer></div></div>
+<section class="sister-principles" aria-label="Princípios de desenvolvimento"><span class="sister-principles-title">PRINCÍPIOS DE DESENVOLVIMENTO</span><ul class="sister-principles-list"><li><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 4C12 2 4 8 5 15l4 4c7 1 13-7 11-15Z"/><path d="M3 21 16 8M8 16v-5m0 5h5"/></svg><span>Simples, leve.</span></li><li><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span>Sempre pronto.</span></li><li><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 8a9 9 0 1 0 0 8"/><path d="M20 3v6h-6"/></svg><span>Sempre incompleto!</span></li></ul></section></main><footer><span>TESSITURA · identidade visual inspirada no MORFO · licença GPL-3.0</span><span>Sempre pronto. Sempre incompleto.</span></footer></div></div>
 <div class="scrim" id="scrim" hidden></div><div role="status" aria-live="polite" id="toast" class="toast"></div>
 </body></html>
